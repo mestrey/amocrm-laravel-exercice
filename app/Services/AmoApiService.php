@@ -6,8 +6,10 @@ use AmoCRM\Client\AmoCRMApiClient;
 use AmoCRM\Client\AmoCRMApiClientFactory;
 use AmoCRM\Collections\Leads\LeadsCollection;
 use AmoCRM\Filters\LeadsFilter;
+use AmoCRM\Models\CatalogElementModel;
+use AmoCRM\Models\LeadModel;
+use AmoCRM\Models\Leads\Pipelines\PipelineModel;
 use App\Repositories\AccessTokenRepositoryInterface;
-use Illuminate\Support\Facades\Log;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 
 class AmoApiService implements AmoApiServiceInterface
@@ -29,6 +31,28 @@ class AmoApiService implements AmoApiServiceInterface
         $filter->setPage($page);
 
         return $this->amo->leads()->get($filter);
+    }
+
+    public function getCatalogElementById(int $catalogId, int $id): ?CatalogElementModel
+    {
+        return $this->amo->catalogElements($catalogId)->getOne($id);
+    }
+
+    public function getPipelineById(int $id): ?PipelineModel
+    {
+        return $this->amo->pipelines()->getOne($id);
+    }
+
+    public function getLeadById(int $id): ?LeadModel
+    {
+        return $this->amo->leads()->getOne($id, [
+            LeadModel::CATALOG_ELEMENTS
+        ]);
+    }
+
+    public function catalogElementsSyncOne(int $catalogId, CatalogElementModel $catalogElement): ?CatalogElementModel
+    {
+        return $this->amo->catalogElements($catalogId)->syncOne($catalogElement);
     }
 
     public function authenticate(int $accountId): bool

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use AmoCRM\Collections\Leads\LeadsCollection;
+use AmoCRM\Models\CatalogElementModel;
+use AmoCRM\Models\LeadModel;
+use AmoCRM\Models\Leads\Pipelines\PipelineModel;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 
 interface AmoApiServiceInterface
@@ -17,4 +20,9 @@ interface AmoApiServiceInterface
     public function setToken(AccessTokenInterface $accessToken): void;
 
     public function getLeadsByPage(int $page): ?LeadsCollection;
+    public function getLeadById(int $id): ?LeadModel;
+    public function getPipelineById(int $id): ?PipelineModel;
+    public function getCatalogElementById(int $catalogId, int $id): ?CatalogElementModel;
+
+    public function catalogElementsSyncOne(int $catalogId, CatalogElementModel $catalogElement): ?CatalogElementModel;
 }

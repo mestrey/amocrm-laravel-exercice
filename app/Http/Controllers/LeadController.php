@@ -13,20 +13,41 @@ class LeadController extends Controller
     ) {
     }
 
-    public function index(Request $request)
+    public function index(int $id = null)
     {
-        $page = $request->has('page') ? $request->get('page') : 1;
+        if ($id == null) {
+            return response()->json(['error' => 'id is null']);
+        }
 
         try {
-            $leads = $this->amoApiService->getLeadsByPage(intval($page));
+            $lead = $this->amoApiService->getLeadById($id);
+            $elements = $lead->getCatalogElementsLinks();
 
-            return response()->json([
-                'leads' => $leads
-            ]);
+            $sum = 0;
+            $res = ['success' => true, 'products' => $elements->count(), 'data' => []];
+
+            foreach ($elements as $el) {
+                $product = $this->amoApiService->getCatalogElementById($el->getCatalogId(), $el->id);
+
+                foreach ($product->getCustomFieldsValues() as $customField) {
+                    if ($customField->fieldCode == "PRICE") {
+                        $sum += intval($customField->values[0]->getValue());
+                    } else if ($customField->fieldCode == "SPECIAL_PRICE_1") {
+                        $priceOne = intval($customField->values[0]->value);
+                        $res['data'][] = [
+                            'priceOne' => $priceOne
+                        ];
+                    }
+                }
+            }
+
+            $res['sum'] = $sum;
+
+            return response()->json($res);
         } catch (AmoCRMApiNoContentException $e) {
-            return response()->json(['leads' => []]);
+            return response()->json(['error' => 'id not found']);
         } catch (\Exception $e) {
-            return response()->json(['Error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()]);
         }
     }
 }
