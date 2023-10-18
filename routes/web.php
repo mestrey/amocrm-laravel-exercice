@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Middleware\AmoAuthentication;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/{vue_capture?}', function () {
-    return view('home');
-})->where('vue_capture', '[\/\w\.-]*');
+Route::middleware(AmoAuthentication::class)->group(function () {
+    Route::get('{any?}', function () {
+        return view('home');
+    })->where('any', '.*')->name('home');
+});
